@@ -1,0 +1,51 @@
+{
+  "PORT": 5999,
+  "distros": {
+    "debian": {
+      "repoURL": "http://ftp.debian.org/debian/",
+      "components": [
+        "main/",
+        "contrib/",
+        "non-free/"
+      ],
+      "releaseNames": [],
+      "releaseNamesFilter": {
+        "basicFilter": "^[a-z]*/$",
+        "excludeFilter": [
+          "stable/",
+          "experimental/",
+          "oldoldstable/",
+          "oldstable/",
+          "sid/",
+          "testing/",
+          "unstable/",
+          "Parent Directory"
+        ]
+      },
+      "archs": [],
+      "archsFilter": [
+        "^binary-.*/$"
+      ]
+    },
+    "ubuntu": {
+      "repoURL": "http://archive.ubuntu.com/ubuntu/",
+      "components": [
+        "main/",
+        "multiverse/",
+        "restricted/",
+        "universe/"
+      ],
+      "releaseNames": [],
+      "releaseNamesFilter": {
+        "basicFilter": "^[a-z]*/$",
+        "excludeFilter": [
+          "devel/"
+        ]
+      },
+    "archs": [],
+    "archsFilter": [
+      "^binary-.*/$"
+    ]
+  }
+}
+}

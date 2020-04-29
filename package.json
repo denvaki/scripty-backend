@@ -1,0 +1,22 @@
+{
+  "name": "back-end",
+  "version": "1.0.0",
+  "description": "Fetch information resources from external",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "devStart": "nodemon server.js"
+  },
+  "author": "Deniss Vakilov",
+  "license": "GPL-2.0-only",
+  "dependencies": {
+    "express": "^4.17.1",
+    "gunzip-file": "^0.1.1",
+    "jsdom": "^16.2.2",
+    "node-fetch": "^2.6.0",
+    "node-html-parser": "^1.2.16"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
