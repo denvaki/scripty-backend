@@ -1,29 +1,17 @@
 module.exports = class PackageRecord {
     constructor() {
         this.Package
-        this.Source
         this.Version
         this.Installed_Size
         this.Maintainer
         this.Architecture
         this.Depends
-        this.Enhances
         this.Description
         this.Homepage
-        this.Description_md5
         this.Section
-        this.Priority
+        this.Sub_Section
         this.Filename
         this.Size
-        this.MD5sum
-        this.SHA256
-        this.Suggests
-        this.Multi_Arch
-        this.Tag
-        this.Replaces
-        this.Provides
-        this.Recommends
         this.Conflicts
-        this.Breaks
     }
 }

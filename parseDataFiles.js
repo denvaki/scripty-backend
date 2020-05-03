@@ -1,48 +1,39 @@
 //'use strict';
-const gunzip = require('gunzip-file');
+require('dotenv').config();
+const unpackDataFolder = process.env.UNPACK_FOLDER || './output/';
+const { getData }= require('./updateData/fetchDataFiles.js')
 const fs = require('fs');
-const { parsePackage } = require('./parsePackage')
-
-const sourceDataFolder = './zippedData/';
-const destinationDataFolder = './output/';
-
-/* let unpack = async () => {
-    await fs.readdirSync(sourceDataFolder).forEach(async zippedFile => {
-        //if(!file.match(/^(debian|ubuntu)\+.*\.gz$/)) return;
-        let unzipedFile = zippedFile.replace(/\.gz$/, '');
-
-        await gunzip(sourceDataFolder + zippedFile, destinationDataFolder + unzipedFile, () => {
-            console.log(`gunzip of ${zippedFile} is done`);
-        });
-    });
-    return true;
-}; */
+const { parsePackage } = require('./parsePackage.js')
 
 
-function main() {
 
-    let unpecked = true;//await unpack();
-    if (unpecked) {
-        let parsedPackages = [];
-        let garbide = [];
-        let dirFiles = fs.readdirSync(destinationDataFolder);
-        for (let i=0; i<10; i++){
-            let file = dirFiles[i];
-            fs.readFile(destinationDataFolder + file, 'utf8', function (err, data) {
-                if (err) return console.err(err);
+
+
+async function main() {
+    console.time("updates");
+    let fetchData = await getData();
+        fetchData.on("finished", (arg) => {
+            const file = arg.file;
+            fs.readFile(unpackDataFolder + file, 'utf8', function (err, data) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
                 let packages = data.split(/^\n/m);
 
                 packages.forEach(p => {
                     if(p === '') return;
+
                     let parsed = parsePackage(p);
-                    if(parsed.packageRecord.Breaks)console.log(parsed.packageRecord);
+                    if (parsed.packageRecord.Enhances) console.log(parsed.packageRecord.Enhances)
+
                     //if(parsed.garbidge.length) console.log(parsed.garbidge);
-                    
+
                 })
-                
+
             });
-        }
-    }
+        });
+
 }
 
 main();

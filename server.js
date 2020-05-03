@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const mainRouter = express.Router();
 const debApi = require('./debianAPI');
+require('dotenv').config();
 
 const PORT = process.env.PORT || 5999
 
@@ -20,5 +21,6 @@ mainRouter.get('/packageSearch', (req, res) => {
     debApi.packageSearch(req.query.packageName).then(json => res.send(json));
     return;
 });
+
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));

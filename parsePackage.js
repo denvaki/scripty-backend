@@ -3,7 +3,7 @@ module.exports = {
 };
 
 const PackageRecord = require('./PackageRecord')
-const possibleKeys = ["Package", "Source", "Version", "Installed-Size", "Maintainer", "Architecture", "Depends", "Enhances", "Description", "Homepage", "Section", "Priority", "Filename", "Size", "Multi-Arch", "Tag", "Conflicts", "Breaks"];
+const possibleKeys = ["Package", "Version", "Installed-Size", "Maintainer", "Architecture", "Depends", "Description", "Homepage", "Section", "Filename", "Size", "Conflicts"];
 
 function parsePackage(packageString) {
     let packageFieldsArray = packageString.split('\n');
@@ -38,9 +38,12 @@ function parsePackage(packageString) {
         previosProp = key;
         key = key.replace(/-/g, '_');
 
-        packageRecord[key] = value 
-        
-        
+        if (key === 'Section' && value.indexOf('/') !== -1){
+            let values = value.split('/');
+            value = values[0];
+            packageRecord['Sub_Section'] = values[1];
+        }
+        packageRecord[key] = value;
     }
     return {"packageRecord": packageRecord, "garbidge": garbidge}
 }
