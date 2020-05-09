@@ -1,0 +1,436 @@
+[
+  {
+    "distro": "debian",
+    "baseURL": "http://ftp.debian.org/debian/",
+      "releaseNames": [
+      {
+        "release": "bullseye",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          },
+          {
+            "component": "contrib",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          },
+          {
+            "component": "non-free",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "buster",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          },
+          {
+            "component": "contrib",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          },
+          {
+            "component": "non-free",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "jessie",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "all",
+              "amd64",
+              "armel",
+              "armhf",
+              "i386"
+            ]
+          },
+          {
+            "component": "contrib",
+            "archs": [
+              "all",
+              "amd64",
+              "armel",
+              "armhf",
+              "i386"
+            ]
+          },
+          {
+            "component": "non-free",
+            "archs": [
+              "all",
+              "amd64",
+              "armel",
+              "armhf",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "stretch",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          },
+          {
+            "component": "contrib",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          },
+          {
+            "component": "non-free",
+            "archs": [
+              "all",
+              "amd64",
+              "arm64",
+              "armel",
+              "armhf",
+              "i386",
+              "mips",
+              "mips64el",
+              "mipsel",
+              "ppc64el",
+              "s390x"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "distro": "ubuntu",
+    "baseURL": "http://archive.ubuntu.com/ubuntu/",
+    "releaseNames": [
+      {
+        "release": "bionic",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "eoan",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "focal",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "groovy",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "precise",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "trusty",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      },
+      {
+        "release": "xenial",
+        "components": [
+          {
+            "component": "main",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "multiverse",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "restricted",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          },
+          {
+            "component": "universe",
+            "archs": [
+              "amd64",
+              "i386"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

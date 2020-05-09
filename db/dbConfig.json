@@ -1,0 +1,10 @@
+{
+  "user": "postgres",
+  "host": "104.248.141.154",
+  "password": "Qwerty1234567",
+  "port": 5432,
+  "max": 2000,
+  "idleTimeoutMillis": 30000,
+  "connectionTimeoutMillis": 80000,
+  "database": "distroPackages"
+}

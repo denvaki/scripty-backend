@@ -3,14 +3,14 @@ module.exports = {
 };
 
 const PackageRecord = require('./PackageRecord')
-const possibleKeys = ["Package", "Version", "Installed-Size", "Maintainer", "Architecture", "Depends", "Description", "Homepage", "Section", "Filename", "Size", "Conflicts"];
 
-function parsePackage(packageString) {
+
+function parsePackage(packageString, section) {
     let packageFieldsArray = packageString.split('\n');
     let garbidge = [];
 
     let packageRecord = new PackageRecord();
-
+    const possibleKeys = Object.keys(packageRecord).map(key => key.replace('_', '-'));
     let previosProp;
     for (let f=0; f<packageFieldsArray.length; f++) {
         let field = packageFieldsArray[f];
@@ -39,11 +39,12 @@ function parsePackage(packageString) {
         key = key.replace(/-/g, '_');
 
         if (key === 'Section' && value.indexOf('/') !== -1){
-            let values = value.split('/');
-            value = values[0];
-            packageRecord['Sub_Section'] = values[1];
+            let sectionValueIdx = value.indexOf('/');
+            value = value.substring(0, sectionValueIdx);
+            packageRecord['Sub_Section'] = value.substring(sectionValueIdx+1);
         }
         packageRecord[key] = value;
     }
+    if (packageRecord.Section === undefined) packageRecord.Section = section;
     return {"packageRecord": packageRecord, "garbidge": garbidge}
 }

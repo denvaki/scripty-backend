@@ -18,20 +18,26 @@ async function getRecords(URL) {
         .filter(a => a !== undefined);
 }
 
-function downloadFile(URL, downloadFolder, localFileName, remoteFileName = 'Packages.gz') {
-    let linkName = URL + remoteFileName;
-    const downloadUncompressEmitter = new EventEmitter();
-    let fileName = localFileName + "+" + remoteFileName;
-    //console.log(fileName);
-    const file = fs.createWriteStream(downloadFolder + fileName);
-    const request = http.get(linkName, function (response) {
-        response.pipe(file);
-        file.on('close', () => {
-            unpack(downloadFolder, fileName, process.env.PROJECT_ROOT + process.env.UNPACK_FOLDER || './output/')
-                .on('uncompressed', (arg) => downloadUncompressEmitter.emit('downloadedUncompressed', arg));
+function downloadFile(URL, downloadFolder, localFileName, remoteFileName = 'Packages.gz', unzip = true, unzipFolder) {
+    return new Promise((resolve, reject) =>{
+        if (URL === undefined) return {error: "URL is not specified"};
+        if (downloadFolder === undefined || localFileName === undefined) return {error: "Download folder of Local filename is not specified"};
+        if (unzip === true && unzipFolder === undefined) return {error: "Unzip folder is not specified"};
+        let linkName = URL + remoteFileName;
+        let fileName = localFileName + "+" + remoteFileName;
+        console.log(fileName)
+        const file = fs.createWriteStream(downloadFolder + fileName);
+        const request = http.get(linkName, function (response) {
+            response.pipe(file);
+            file.on('close', () => {
+                if (unzip){
+                    unpack(downloadFolder, fileName, unzipFolder)
+                        .on('uncompressed', (arg) => resolve({status: 'downloadedUncompressed', value: arg}));
+                }else resolve({status: 'downloaded', value: file});
+            });
         });
-    });
-    return downloadUncompressEmitter;
+    })
+
 
 }
 
@@ -51,7 +57,7 @@ function unpack(sourceDataFolder, zippedFile, destinationDataFolder) {
     let unzipedFile = zippedFile.replace(/\.gz$/, '');
     let unpackEmitter = new EventEmitter();
     gunzip(sourceDataFolder + zippedFile, destinationDataFolder + unzipedFile, () => {
-        console.log(`gunzip of ${zippedFile} is done`);
+        //console.log(`gunzip of ${zippedFile} is done`);
         unpackEmitter.emit('uncompressed', {file: unzipedFile});
     });
     return unpackEmitter;
