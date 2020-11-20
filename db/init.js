@@ -29,7 +29,9 @@ function createTables(distroObj) {
     const releases = distroObj.releaseNames.map(releaseName => releaseName.release);
     releases.forEach(release => {
         const createTableQuery =
-            `CREATE TABLE IF NOT EXISTS ${release} (
+            `
+            drop table if exists ${release};
+            CREATE TABLE IF NOT EXISTS ${release} (
                 ID SERIAL PRIMARY KEY,
                 Package varchar NOT NULL,
                 Version varchar NOT NULL,
@@ -44,11 +46,69 @@ function createTables(distroObj) {
                 Filename varchar,
                 Size integer,
                 Conflicts varchar
-                )`;
+                );
+                
+                create or replace function getRowsByPackageName_${release}(
+                    package_names TEXT ARRAY,
+                    arch varchar default '%'
+                )
+                
+                returns table (res_package varchar, res_version varchar, res_installed_size int, res_maintainer varchar, res_architecture varchar, res_depends varchar, res_description varchar, 
+                        res_homepage varchar, res_section varchar, res_sub_section varchar, res_filename varchar, res_size integer, res_conflicts varchar)
+                AS $$
+                BEGIN
+                    return query
+                    SELECT package, version, installed_size, maintainer, architecture, depends, description, 
+                        homepage, section, sub_section, filename, size, conflicts 
+                            FROM ${release} WHERE package = ANY(package_names) AND architecture like arch;
+                END;$$
+                language plpgsql;
+                ;
+                
+
+
+                create or replace function isPackageExist_${release}(
+                    package_name TEXT,
+                    arch TEXT
+                )
+                
+                returns boolean 
+                AS $$
+                declare
+                 counter integer;
+                BEGIN
+                    counter := 	count(*) from ${release} where package = package_name and architecture = arch;
+                    if (counter > 0) then return (TRUE);
+                    else return (FALSE);
+                    end if;
+                END;$$
+                language plpgsql;
+                ;
+
+                `;
         dbConnect.query(createTableQuery, (err, res) => {
             console.log(err, res)
         });
+
     });
+
+    if(distroObj.latestRelease && distroObj.latestRelease.release){
+
+        let query = `
+            DROP TABLE IF EXISTS contents;
+            CREATE TABLE IF NOT EXISTS contents(
+                ID SERIAL PRIMARY KEY,
+                filename VARCHAR NOT NULL,
+                package VARCHAR NOT NULL,
+                section VARCHAR
+            );
+        `;
+
+        dbConnect.query(query, (err, res) => {
+            console.log(err, res)
+        });
+
+    }
 }
 
 function deleteTable(all, tableNameArr) {

@@ -18,12 +18,12 @@ module.exports = class DBConnect {
     async query(text, params, callback) {
 
         const start = Date.now()
-        return await this.pool.query(text, params, (err, res) => {
+        return this.pool.query(text, params, (err, res) => {
             const duration = Date.now() - start;
             if (err) {
-                console.log(err);
-                console.log('executed query', {text, params, duration})
-            }//else console.log("success")
+                console.error(err.stack);
+                console.error('executed query', {text, params, duration})
+            }
 
             callback(err, res)
         })

@@ -2,11 +2,11 @@
 require('dotenv').config();
 const unpackDataFolder = process.env.UNPACK_FOLDER || './output/';
 const  downloadFolder = process.env.DOWNLOAD_FOLDER || './zippedData';
-const {getData} = require('./updateData/fetchRepoData.js')
+const {getData} = require('./updateRepoMap/fetchRepoData.js')
 const fs = require('fs');
 const {parsePackage} = require('./parsePackage.js')
 const {Pool} = require('pg')
-const insert = require('./db/crud.js');
+const Crud = require('./db/crud.js');
 const {downloadFile} = require('./utils/dataFilesUtils');
 const url = require('url');
 const DBConnect = require('./db/DBConnect.js');
@@ -16,39 +16,44 @@ function parse(file) {
         let data = fs.readFileSync(unpackDataFolder + file, 'utf8');
         let packages = data.split(/^\n/m);
         let fileNameParams = file.split('+');
-        const databaseName = fileNameParams[0];
-        const tableName = fileNameParams[2];
         const packageRecords = packages.filter(p => p !== '' && p !== undefined)
             .map(p => parsePackage(p, fileNameParams[2]).packageRecord)
             .filter(p => p.Package);
-        return {databaseName, tableName, packageRecords};
+        return packageRecords;
     } catch (e) {
         console.error(e);
     }
 }
 
 async function main() {
+
+    //await getData() // update repoMap first
+
     const dataPath = (process.env.PROJECT_ROOT || './') + "repositoriesMap.json";
     const repoMapArr = require(dataPath);
 
     for (const distRepo of repoMapArr) {
         const {baseURL} = distRepo;
-        const databaseName = distro = distRepo.distro;
+        const databaseName = distRepo.distro;
         let dbConnect = new DBConnect(databaseName);
+        let crud = new Crud(dbConnect);
         for (const releaseName of distRepo.releaseNames) {
             const tableName = release = releaseName.release;
             let URLs = [];
             releaseName.components.forEach(component => component.archs.forEach(arch => URLs.push(`${baseURL}dists/${release}/${component.component}/binary-${arch}/`)));
             const filenames = await downloadAll(URLs);
-            for (const filename of filenames){
-                const  parseValues = parse(filename.file);
+            // for (const filename of filenames){
+            //     const  packageRecords = parse(filename.file);
 
-                if (parseValues.databaseName === databaseName && parseValues.tableName === tableName && parseValues.packageRecords.length !== 0){
-                    let result = await insert(dbConnect  , parseValues.tableName, parseValues.packageRecords);
-                    console.log(result)
-                }
-            }
+            //     if (tableName && packageRecords.length !== 0){
+            //         let result = await crud.insertPackageRecords(tableName, packageRecords);
+            //         console.log(result)
+            //     }
+            // }
         }
+        dbConnect.close();
+        delete crud;
+        delete dbConnect;
 
     }
 }

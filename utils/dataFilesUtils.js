@@ -9,7 +9,7 @@ const EventEmitter = require('events');
 async function getRecords(URL) {
     let response = await fetch(URL)
     if (response.status !== 200) {
-        console.log("Bad response of " + URL);
+        console.error("Bad response of " + URL);
         return [];
     }
     let repsonseContent = await response.text();
@@ -41,16 +41,20 @@ function downloadFile(URL, downloadFolder, localFileName, remoteFileName = 'Pack
 
 }
 
-function cleanDir(directory) {
-    fs.readdir(directory, (err, files) => {
-        if (err) throw err;
+function cleanDir(directory, file) {
+    let files = fs.readdirSync(directory);
+    if(!file){
+        files.forEach(f => fs.unlink(path.join(directory, f), (err) => {
+            if (err) throw err;
+        })
+        
+        );
 
-        for (const file of files) {
-            fs.unlink(path.join(directory, file), err => {
-                if (err) throw err;
-            });
-        }
-    });
+    }
+    if(file && files.includes(file)){
+        fs.unlink(path.join(directory, file), (err)=> {if(err) throw err})
+    }
+
 }
 
 function unpack(sourceDataFolder, zippedFile, destinationDataFolder) {

@@ -1,14 +1,16 @@
 {
   "PORT": 5999,
+
   "distros": {
     "debian": {
+      "type": "debian-based",
       "repoURL": "http://ftp.debian.org/debian/",
+      "rootFolder": "dists/",
       "components": [
         "main/",
         "contrib/",
         "non-free/"
       ],
-      "releaseNames": [],
       "releaseNamesFilter": {
         "basicFilter": "^[a-z]*/$",
         "excludeFilter": [
@@ -22,30 +24,31 @@
           "Parent Directory"
         ]
       },
-      "archs": [],
-      "archsFilter": [
-        "^binary-.*/$"
-      ]
+      "archsFilter": {
+        "basicFilter": "^binary-.*/$",
+        "excludeFilter": []
+      }
     },
     "ubuntu": {
+      "type": "ubuntu-based",
       "repoURL": "http://archive.ubuntu.com/ubuntu/",
+      "rootFolder": "dists/",
       "components": [
         "main/",
         "multiverse/",
         "restricted/",
         "universe/"
       ],
-      "releaseNames": [],
       "releaseNamesFilter": {
         "basicFilter": "^[a-z]*/$",
         "excludeFilter": [
           "devel/"
         ]
       },
-    "archs": [],
-    "archsFilter": [
-      "^binary-.*/$"
-    ]
+    "archsFilter": {
+      "basicFilter": "^binary-.*/$",
+      "excludeFilter": [ ]
+    }
   }
 }
 }
