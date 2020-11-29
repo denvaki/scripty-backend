@@ -13,5 +13,6 @@ module.exports = class PackageRecord {
         this.Filename = undefined;
         this.Size = undefined;
         this.Conflicts = undefined;
+        this.Release = undefined;
     }
 }

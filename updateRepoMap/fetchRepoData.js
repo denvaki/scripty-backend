@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { getRecords, downloadFile, cleanDir } = require('../utils/dataFilesUtils.js')
+const { getLinks, downloadFile, cleanDir } = require('../utils/dataFilesUtils.js')
 const { distros } = require('../config.json')
 const fs = require('fs');
 const tmpDir = process.env.PROJECT_ROOT + process.env.TMP || './tmp/';
@@ -58,7 +58,7 @@ async function fileterRecords(link, basicFilter, excludeFilter) {
     if (!link || !basicFilter) {
         return [];
     }
-    let records = await getRecords(link);
+    let records = await getLinks(link);
     return records.filter(a => a.match(basicFilter) && !excludeFilter.includes(a));
 }
 
@@ -96,4 +96,3 @@ async function parseReleaseFile(URL, filename) {
 
 module.exports.getData = getData
 
-//getData();

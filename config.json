@@ -1,11 +1,16 @@
 {
   "PORT": 5999,
 
+  
   "distros": {
     "debian": {
       "type": "debian-based",
       "repoURL": "http://ftp.debian.org/debian/",
       "rootFolder": "dists/",
+      "contentsFilter": {
+        "basicFilter": "^Contents-.*$",
+        "excludeFilter": []
+      },
       "components": [
         "main/",
         "contrib/",
@@ -33,6 +38,10 @@
       "type": "ubuntu-based",
       "repoURL": "http://archive.ubuntu.com/ubuntu/",
       "rootFolder": "dists/",
+      "contentsFilter": {
+        "basicFilter": "^Contents-.*$",
+        "excludeFilter": []
+      },
       "components": [
         "main/",
         "multiverse/",
@@ -45,10 +54,10 @@
           "devel/"
         ]
       },
-    "archsFilter": {
-      "basicFilter": "^binary-.*/$",
-      "excludeFilter": [ ]
+      "archsFilter": {
+        "basicFilter": "^binary-.*/$",
+        "excludeFilter": []
+      }
     }
   }
-}
 }

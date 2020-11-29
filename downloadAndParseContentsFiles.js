@@ -1,18 +1,17 @@
 //'use strict';
 require('dotenv').config();
-const unpackDataFolder = process.env.UNPACK_FOLDER || './output/';
+const unpackDataFolder = process.env.ContentsDir || './contents/';
 const downloadFolder = process.env.DOWNLOAD_FOLDER || './zippedData';
 const { getData } = require('./updateRepoMap/fetchRepoData.js')
 const fs = require('fs');
 const readline = require('readline');
-const { parsePackage } = require('./parsePackage.js')
+const { parsePackage } = require('./getPackage/parsePackage.js')
 const { Pool } = require('pg')
 const Crud = require('./db/crud.js');
 const { downloadFile } = require('./utils/dataFilesUtils');
 const url = require('url');
 const DBConnect = require('./db/DBConnect.js');
 const fetch = require('node-fetch');
-const { listenerCount } = require('process');
 
 function parse(file) {
     try {
@@ -149,7 +148,7 @@ async function fileterRecords(link, basicFilter, excludeFilter) {
     if (!link || !basicFilter) {
         return [];
     }
-    let records = await getRecords(link);
+    let records = await getLinks(link);
     return records.filter(a => a.match(basicFilter) && !excludeFilter.includes(a));
 }
 

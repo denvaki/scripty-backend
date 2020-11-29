@@ -1,5 +1,9 @@
 #!/bin/bash
 
+root="${PROJECT_ROOT:-./}"
+
+debug=0
+
 while getopts "d:e:r:c:a:p:m:" arg; do
   case $arg in
     d)
@@ -23,28 +27,35 @@ while getopts "d:e:r:c:a:p:m:" arg; do
     m)
         mode=$OPTARG
         ;;
+    b)
+        debug=1
+        root='../'
+        ;;
     *)
-        echo "unknown argument passed"
+        >&2 echo "unknown argument passed"
         exit 1
         ;;
   esac
 done
 
-[[ -z "${distro}" ]] && echo "no distro specified" && exit 1
+[[ -z "${distro}" ]] && >&2 echo "no distro specified" && exit 1
 
 [[ -z "${rootdir}" ]] && rootdir="*"
 [[ -z "${release}" ]] && release="*"
 [[ -z "${component}" ]] && component="*"
 [[ -z "${architecture}" ]] && architecture="*"
 
-[[ -z "${package}" ]] && echo "no package specified" && exit 1
+[[ -z "${package}" ]] && >&2 echo "no package specified" && exit 1
 [[ -z "${mode}" ]] && mode="strict"
 [[ "${mode}" != "strict" && "${mode}" != "endsWith" && "${mode}" != "startsWith" && "${mode}" != "contains" ]] && echo "wrong mode specified" && exit 1
 
-filename="./output/${distro}+${rootdir}+${release}+${component}+binary-${architecture}+Packages"
-echo "$filename"
-if [[ ! $( compgen -G "${filename}" ) ]];then
-    echo "no file found by passed params" && exit 1
+filenames="${root}packages/${distro}+${rootdir}+${release}+${component}+binary-${architecture}+Packages"
+if [[ ! $( compgen -G "${filenames}" ) ]];then
+  >&2  echo "no Package file found by passed params, ${filenames}" && exit 1
+fi
+
+if [[ "${package}" == *'|'* ]]; then
+    package=$( echo "\(${package}\)" | sed 's/|/\\|/g') 
 fi
 
 if [[ "${mode}" == "endsWith" ]]; then
@@ -55,4 +66,8 @@ elif [[ "${mode}" == "contains" ]]; then
     package=".*${package}.*"
 fi
 
-sed -n "/Package: ${package}$/,/^$/p" ${filename}
+echo "${filenames}"
+for file in ${filenames}; do 
+    
+    sed -n "/Package: ${package}$/,/^$/{s/^$/Release: $(echo ${file} | cut -d'+' -f3)\n/; p}" ${file}
+done

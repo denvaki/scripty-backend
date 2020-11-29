@@ -1,5 +1,5 @@
 const db = require('./index.js');
-const PackageRecord = require('../PackageRecord.js');
+const PackageRecord = require('../getPackage/PackageRecord.js');
 const format = require('pg-format');
 
 class Crud {

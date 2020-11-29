@@ -10,21 +10,27 @@ const repoMap = require(process.env.PROJECT_ROOT + 'repositoriesMap.json');
 const Crud = require('./db/crud.js');
 const DBConnect = require('./db/DBConnect.js');
 const { renderString, renderTemplateFile } = require('template-file');
+const { search } = require('./getPackage/executeSearch.js');
+const { response, json, query } = require('express');
 
 
-ServerResponse.prototype.badRequest = function (response) {
+ServerResponse.prototype.badRequest = function (response, query) {
     this.status(400);
-    this.json({ status: "error", message: response })
+    if(query)response.query = query;
+    if(!response.status) response.status = 'error';
+    this.json(response)
 }
 
-ServerResponse.prototype.okResponse = function (response) {
+ServerResponse.prototype.okResponse = function (response, query) {
     this.status(200);
-    this.json({ status: "success", result: response })
+    if(query) response.query = query;
+    if(!response.status) response.status = 'success'
+    this.json(response)
 }
 
-ServerResponse.prototype.internalError = function (params) {
+ServerResponse.prototype.internalError = function (query) {
     this.status(500);
-    this.json({ status: "server error", message: `Error occurs on server side, please contact administartor!\nPassed parameters: ${JSON.stringify(params)}` });
+    this.json({ status: "server error", message: `Error occurs on server side, please contact administrator!`, query });
 }
 
 app.set('etag', false);
@@ -44,18 +50,22 @@ app.use('/api', mainRouter);
 mainRouter.get('/search', async (req, res) => {
     console.log(req.query);
     let packages;
-    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "packages"]);
+    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "packages", "mode"]);
     if (validatedRequest.isValid === false) {
         res = validatedRequest.res;
         return res;
     } else {
-        packages = validatedRequest.packages;
+        packages = validatedRequest.packages.map(p => p.replace(/"/g, '\"')).join('|');
+        console.log(packages)
     }
-    let { distro, release, arch } = req.query;
+    let { distro, release, arch, mode } = req.query;
 
-    await searchPackage(distro, release, packages, arch)
-        .then(msg => res.okResponse(msg))
-        .catch(msg => { res.internalError(req.query); console.error(msg) });
+    await search(distro, '', release, '', arch, packages, mode)
+            .on("finished", (response) => {
+                if(response.status === 'error'){
+                    res.internalError(req.query); console.error(response)
+                }else res.okResponse(response, req.query)
+            });
     return res;
 
 });
@@ -70,16 +80,8 @@ mainRouter.get('/generate', async (req, res) => {
     } else {
         packages = Array.from(new Set(validatedRequest.packages));
     }
-    let { distro, release, arch } = req.query;
-    let checkedPackages = await Promise.all(packages.map(async (pkg) => {
-        let response = await checkPackageExist(distro, release, pkg, arch);
-        let isExist = response[0].is_exist;
-        return { name: pkg, isExist };
-    }));
 
-    let foundPackages = checkedPackages.filter(p => p && p.name && p.isExist).map(p => p.name);
-    let notFoundPackages = checkedPackages.filter(p => p && p.name && p.isExist === false).map(p => p.name);
-    let generatedScript = await generateScript(foundPackages, notFoundPackages)
+    let generatedScript = await generateScript(packages)
     res.removeHeader('Content-Type');
     res.append('Content-Type', 'text/plain');
 
@@ -128,40 +130,45 @@ function isFilledArray(obj, arrName) {
 
 function validateArgs(res, req, archRequired) {
     let { distro, release, arch, packages } = req.query;
-
+    let query = req.query;
     let result = { isValid: false, res }
-    if (!distro || !release) {
-        res.badRequest(`argument distro or release not specified`);
+    if (!distro) {
+        res.badRequest({message: `argument distro not specified`}, query);
         result.res = res;
         return result;
     }
 
 
     if (!isFilledArray({ repoMap }, 'repoMap')) {
-        res.badRequest(`Empty distributions map`);
+        res.badRequest({message: `Empty distributions map`}, query);
         result.res = res;
         return result;
     }
     const filteredDistributions = repoMap.filter(d => d.distro && d.distro === distro);
     if (filteredDistributions.length === 0) {
-        res.badRequest(`Distribution ${distro} not supported`);
+        res.badRequest({message: `Distribution ${distro} not supported`}), query;
         result.res = res;
         return result;
     }
     if (!isFilledArray(filteredDistributions[0], 'releaseNames')) {
-        res.badRequest(`Empty release list for distribution ${distro}`);
+        res.badRequest({message: `Empty release list for distribution ${distro}`}, query);
         result.res = res;
         return result;
     }
-
-    const filteredReleases = filteredDistributions[0].releaseNames.filter(r => r.release && r.release === release);
+    let filteredReleases;
+    if(release){
+        filteredReleases = filteredDistributions[0].releaseNames.filter(r => r.release && r.release === release);
+    }else{
+        filteredReleases = filteredDistributions[0].releaseNames.filter(r => r.release);
+    }
+    
     if (filteredReleases.length === 0) {
-        res.badRequest(`Release ${release} not supported`);
+        res.badRequest({message: `Release ${release} not supported`}, query);
         result.res = res;
         return result;
     }
     if (!isFilledArray(filteredReleases[0], 'components')) {
-        res.badRequest(`Empty components list for distibution ${distro} and it's release ${release}`);
+        res.badRequest({message: `Empty components list for distibution ${distro} and it's release ${release}`}, query);
         result.res = res;
         return result;
     }
@@ -169,18 +176,18 @@ function validateArgs(res, req, archRequired) {
     else if (arch) {
         const filteredComponents = filteredReleases[0].components.filter(c => c.archs && c.archs.includes(arch));
         if (filteredComponents.length === 0) {
-            res.badRequest(`Architecture ${arch} not supported`);
+            res.badRequest({message: `Architecture ${arch} not supported`}, query);
             result.res = res;
             return result;
         }
     } else if (archRequired && !arch) {
-        res.badRequest(`Architecture not specified`);
+        res.badRequest({message: `Architecture not specified`}, query);
         result.res = res;
         return result;
     }
 
     if (!packages) {
-        res.badRequest(`argument packages not specified`);
+        res.badRequest({message: `argument packages not specified`}, query);
         result.res = res;
         return result;
     }
@@ -189,13 +196,13 @@ function validateArgs(res, req, archRequired) {
 
         packages = JSON.parse(packages);
         if (!Array.isArray(packages)) {
-            res.badRequest(`Argument packages is not array`);
+            res.badRequest({message: `Argument packages is not array`}, query);
             result.res = res;
             return result;
         }
         packages = packages.filter(p => p && p.length);
         if (packages.length === 0) {
-            res.badRequest(`Argument packages is empty array`);
+            res.badRequest({message: `Argument packages is empty array`}, query);
             result.res = res;
             return result;
         }
@@ -203,7 +210,7 @@ function validateArgs(res, req, archRequired) {
         result.packages = packages
     } catch (error) {
         console.error(error);
-        res.badRequest(`badly specified argument packages`)
+        res.badRequest({message: `badly specified argument packages`}, query)
         result.res = res;
         return result;
     }
@@ -213,10 +220,11 @@ function validateArgs(res, req, archRequired) {
 
 function checkArgs(allowedArgs, req, res) {
     let result = { isValid: false, res }
+    let query = req.query;
     let requestArgs = Object.keys(req.query);
     let listOfUnknownArgs = requestArgs.filter(arg => !allowedArgs.includes(arg));
     if (listOfUnknownArgs.length) {
-        res.badRequest(`received unknown arguments: ${listOfUnknownArgs.join(', ')}. This entrypoint supports only ${allowedArgs.join(', ')}`)
+        res.badRequest({message: `received unknown arguments: ${listOfUnknownArgs.join(', ')}. This entrypoint supports only ${allowedArgs.join(', ')}`}, query)
         result.res = res;
     } else {
         result.isValid = true;
@@ -246,19 +254,14 @@ function validateRequest(req, res, allowedArgs, archRequired) {
     }
 }
 
-async function generateScript(foundPackages, notFoundPackages) {
+async function generateScript(foundPackages) {
     let packagesToInstall = ''
+    foundPackages = Array.from(new Set(foundPackages));
     if (foundPackages.length) {
         packagesToInstall = `apt -y install ${foundPackages.join(' ')}`
     }
-
-    let notFoundPackagesMsg = '';
-    if(notFoundPackages.length){
-        notFoundPackagesMsg = `echo "following packages not found in repository: ${notFoundPackages.join(', ')}"`;
-    }
     const data = {
-        notFoundPackagesMsg,
-        packagesToInstall: packagesToInstall
+        packagesToInstall
     }
     return await renderTemplateFile('./templateOfApt', data)
 }

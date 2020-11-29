@@ -6,7 +6,7 @@ const path = require('path');
 const gunzip = require('gunzip-file');
 const EventEmitter = require('events');
 
-async function getRecords(URL) {
+async function getLinks(URL) {
     let response = await fetch(URL)
     if (response.status !== 200) {
         console.error("Bad response of " + URL);
@@ -68,7 +68,7 @@ function unpack(sourceDataFolder, zippedFile, destinationDataFolder) {
 }
 
 module.exports = {
-    getRecords,
+    getLinks,
     downloadFile,
     cleanDir
 }

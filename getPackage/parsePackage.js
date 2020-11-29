@@ -5,10 +5,9 @@ module.exports = {
 const PackageRecord = require('./PackageRecord')
 
 
-function parsePackage(packageString, section) {
+function parsePackage(packageString) {
     let packageFieldsArray = packageString.split('\n');
     let garbidge = [];
-
     let packageRecord = new PackageRecord();
     const possibleKeys = Object.keys(packageRecord).map(key => key.replace('_', '-'));
     let previosProp;
@@ -45,6 +44,5 @@ function parsePackage(packageString, section) {
         }
         packageRecord[key] = value;
     }
-    if (packageRecord.Section === undefined) packageRecord.Section = section;
-    return {"packageRecord": packageRecord, "garbidge": garbidge}
+    return {packageRecord,  garbidge};
 }

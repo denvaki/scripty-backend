@@ -10,6 +10,7 @@
   "author": "Deniss Vakilov",
   "license": "GPL-2.0-only",
   "dependencies": {
+    "child_process": "^1.0.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "gunzip-file": "^0.1.1",
