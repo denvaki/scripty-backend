@@ -4,7 +4,7 @@ const unpackDataFolder = process.env.PackagesDir || './packages/';
 const  downloadFolder = process.env.DOWNLOAD_FOLDER || './zippedData';
 const {getData} = require('./updateRepoMap/fetchRepoData.js')
 const fs = require('fs');
-const {downloadFile} = require('./utils/dataFilesUtils');
+const {downloadFile, cleanDir} = require('./utils/dataFilesUtils');
 const url = require('url');
 
 
@@ -19,6 +19,7 @@ async function main() {
             let URLs = [];
             releaseName.components.forEach(component => component.archs.forEach(arch => URLs.push(`${baseURL}dists/${releaseName.release}/${component.component}/binary-${arch}/`)));
             const filenames = await downloadAll(URLs);
+
         }
 
     }
@@ -34,8 +35,10 @@ async function downloadAll(URLs) {
         const downloadStatus = await downloadFile(URL, downloadFolder, localName, 'Packages.gz', true, unpackDataFolder);
         if (downloadStatus.status && downloadStatus.status === 'downloadedUncompressed' && downloadStatus.value){
             filenames.push(downloadStatus.value);
+            cleanDir(downloadFolder, [downloadStatus.value.file + ".gz"]);
         }
     }
+    
     return filenames
 }
 

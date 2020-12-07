@@ -2,7 +2,7 @@ require('dotenv').config();
 const { getLinks, downloadFile, cleanDir } = require('../utils/dataFilesUtils.js')
 const { distros } = require('../config.json')
 const fs = require('fs');
-const tmpDir = process.env.PROJECT_ROOT + process.env.TMP || './tmp/';
+const tmpDir = (process.env.PROJECT_ROOT || './') + process.env.TMP || './tmp/';
 const EventEmitter = require('events');
 
 async function getData() {
@@ -40,7 +40,7 @@ async function getData() {
         return { distro, "baseURL": repoURL, type, "releaseNames": releasesArray, latestRelease,  rootFolder};
     })
     );
-    fs.writeFile(process.env.PROJECT_ROOT + 'repositoriesMap.json', JSON.stringify(data), 'utf8', (error) => {
+    fs.writeFile((process.env.PROJECT_ROOT || './') + 'repositoriesMap.json', JSON.stringify(data), 'utf8', (error) => {
         let emitArgs = {};
         if (error) {
             console.log('[FAIL]: ' + err);
@@ -88,7 +88,7 @@ async function parseReleaseFile(URL, filename) {
                 date = new Date(line.split(": ")[1]);
             }
         }
-        //cleanDir(tmpDir, releaseFile.substring(releaseFile.lastIndexOf('/')+1));
+        cleanDir(tmpDir, [releaseFile.substring(releaseFile.lastIndexOf('/')+1)]);
     }
     
     return { version, components, date }
