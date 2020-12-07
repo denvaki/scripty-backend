@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 root="${PROJECT_ROOT:-./}"
 
@@ -38,31 +38,34 @@ while getopts "d:e:r:c:a:p:m:" arg; do
   esac
 done
 
-[[ -z "${distro}" ]] && >&2 echo "no distro specified" && exit 1
+[ -z "${distro}" ] && >&2 echo "no distro specified" && exit 1
 
-[[ -z "${rootdir}" ]] && rootdir="*"
-[[ -z "${release}" ]] && release="*"
-[[ -z "${component}" ]] && component="*"
-[[ -z "${architecture}" ]] && architecture="*"
+[ -z "${rootdir}" ] && rootdir="*"
+[ -z "${release}" ] && release="*"
+[ -z "${component}" ] && component="*"
+[ -z "${architecture}" ] && architecture="*"
 
-[[ -z "${package}" ]] && >&2 echo "no package specified" && exit 1
-[[ -z "${mode}" ]] && mode="strict"
-[[ "${mode}" != "strict" && "${mode}" != "endsWith" && "${mode}" != "startsWith" && "${mode}" != "contains" ]] && echo "wrong mode specified" && exit 1
+[ -z "${package}" ] && >&2 echo "no package specified" && exit 1
+[ -z "${mode}" ] && mode="strict"
+[ "${mode}" != "strict" ] && [ "${mode}" != "endsWith" ] && [ "${mode}" != "startsWith" && "${mode}" != "contains" ] && [ echo "wrong mode specified"  ] && exit 1
 
 filenames="${root}packages/${distro}+${rootdir}+${release}+${component}+binary-${architecture}+Packages"
-if [[ ! $( compgen -G "${filenames}" ) ]];then
+
+ls  ${filenames} 2>&1 >/dev/null
+if [ $? -ne 0 ]; then
   >&2  echo "no Package file found by passed params, ${filenames}" && exit 1
 fi
 
-if [[ "${package}" == *'|'* ]]; then
+if [ "${package}" = *'|'* ]; then
     package=$( echo "\(${package}\)" | sed 's/|/\\|/g') 
 fi
 
-if [[ "${mode}" == "endsWith" ]]; then
+
+if [ "${mode}" = "endsWith" ]; then
     package=".*${package}"
-elif [[ "${mode}" == "startsWith" ]]; then
+elif [ "${mode}" = "startsWith" ]; then
     package="${package}.*"
-elif [[ "${mode}" == "contains" ]]; then
+elif [ "${mode}" = "contains" ]; then
     package=".*${package}.*"
 fi
 
