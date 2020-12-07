@@ -5,7 +5,7 @@ const { response } = require('express');
 
 function search(distribution, rootdir, release, component, architecture, package, mode) {
     const emitter = new EventEmitter();
-    let query = 'bash getPackage/searchPackage.sh ';
+    let query = 'sh getPackage/searchPackage.sh ';
 
     if(!distribution || !package){
         emitter.emit("finished", {"status": "error", "message": "distribution or package not specified"})
