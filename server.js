@@ -1,10 +1,8 @@
 require('dotenv').config();
-const { rejects } = require('assert');
 const express = require('express');
 const app = express();
 const mainRouter = express.Router();
 var { ServerResponse } = require('http');
-const { resolve } = require('path');
 const PORT = process.env.PORT || 5999
 const repoMap = require(process.env.PROJECT_ROOT + 'repositoriesMap.json');
 const Crud = require('./db/crud.js');

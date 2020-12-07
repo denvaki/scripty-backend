@@ -1,6 +1,4 @@
 {
-  "PORT": 5999,
-
   
   "distros": {
     "debian": {
