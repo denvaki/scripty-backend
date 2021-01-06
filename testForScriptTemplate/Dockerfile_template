@@ -1,0 +1,5 @@
+FROM {{ baseimage }}
+WORKDIR /root/
+COPY ./tmp_template ./
+RUN chmod +x . && chmod +x tmp_template && useradd -m devaki
+CMD [ {{ commands }} {{ arguments }} "/root/tmp_template" ]
