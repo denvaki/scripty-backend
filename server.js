@@ -256,10 +256,10 @@ async function generateScript(foundPackages) {
     let packagesToInstall = ''
     foundPackages = Array.from(new Set(foundPackages));
     if (foundPackages.length) {
-        packagesToInstall = `apt -y install ${foundPackages.join(' ')}`
+        packagesToInstall = foundPackages.join(' ');
     }
     const data = {
         packagesToInstall
     }
-    return await renderTemplateFile('./templateOfApt', data)
+    return await renderTemplateFile('./templateOfApt.sh', data)
 }
