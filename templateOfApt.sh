@@ -1,18 +1,17 @@
 #!/bin/sh -a
 
-# Detect if user in Desktop Environment
-HAS_DE="false"
-if [ -z "$XDG_CURRENT_DESKTOP" ]; then
-	HAS_DE="false"
-else
-	HAS_DE="true"
-fi
+nullify() {
+	"$@" >/dev/null 2>&1
+	return $?
+}
 
-# check and mark command for GUI notifications
-HAS_ZENITY="false"
-nullify command -v zenity && HAS_ZENITY="true"
+find_bin() {
+	for x in $(echo "$PATH" | sed 's/:/\n/g'); do
+		[ -f "$x/${1}" ] && return 0
+	done
+	return 1
+}
 
-# Function to display to user required messages
 inform_user() {
 
 	if [ $# -ne 2 ] && [ -z "$1" ] && [ "$2" != "info" ] && [ "$2" != "warning" ] && [ "$2" != "error" ]; then
@@ -30,22 +29,27 @@ inform_user() {
 
 }
 
+# Detect if user in Desktop Environment
+HAS_DE="false"
+if [ -z "$XDG_CURRENT_DESKTOP" ]; then
+	HAS_DE="false"
+else
+	HAS_DE="true"
+fi
+
+# check and mark command for GUI notifications
+HAS_ZENITY="false"
+nullify command -v zenity && HAS_ZENITY="true"
+
+# Function to display to user required messages
+
+
 if [ "$(id -u)" != 0 ]; then
 	inform_user "This script must be run as root" "error"
 	exit 5
 fi
 
-nullify() {
-	"$@" >/dev/null 2>&1
-	return $?
-}
 
-find_bin() {
-	for x in $(echo "$PATH" | sed 's/:/\n/g'); do
-		[ -f "$x/${1}" ] && return 0
-	done
-	return 1
-}
 
 # Find our package manager
 if nullify find_bin apt-get || nullify find_bin apt; then
@@ -88,7 +92,6 @@ if [ ${EXIT_CODE} != 0 ] || grep -qE '^[WEN]:' ~/.scripty_tmp; then
 fi
 rm -f ~/.scripty_tmp 2>/dev/null
 
-packages="{{ packagesToInstall }}"
 packages_amount=$(echo "$packages" | tr " " "\n" | wc -l | tr -d " ")
 counter=1
 installed=""
