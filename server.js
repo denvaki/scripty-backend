@@ -48,17 +48,17 @@ app.use('/api', mainRouter);
 mainRouter.get('/search', async (req, res) => {
     console.log(req.query);
     let packages;
-    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "packages", "mode"]);
+    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "packages", "mode"], false, "package");
     if (validatedRequest.isValid === false) {
         res = validatedRequest.res;
         return res;
     } else {
-        packages = validatedRequest.packages.map(p => p.replace(/"/g, '\"')).join('|');
+        packages = validatedRequest.querydata.map(p => p.replace(/"/g, '\"')).join('|');
         console.log(packages)
     }
     let { distro, release, arch, mode } = req.query;
 
-    await search(distro, '', release, '', arch, packages, mode)
+    await search(distro, '', release, '', arch, packages, mode, "package")
             .on("finished", (response) => {
                 if(response.status === 'error'){
                     res.internalError(req.query); console.error(response)
@@ -68,15 +68,41 @@ mainRouter.get('/search', async (req, res) => {
 
 });
 
-mainRouter.get('/generate', async (req, res) => {
+mainRouter.get('/filesearch', async (req, res) => {
     console.log(req.query);
-    let packages;
-    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "packages"], true);
+    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "filenames", "mode"], false, "filename");
+    
+    let filenames;
     if (validatedRequest.isValid === false) {
         res = validatedRequest.res;
         return res;
     } else {
-        packages = Array.from(new Set(validatedRequest.packages));
+        filenames = validatedRequest.querydata.map(p => p.replace(/"/g, '\"')).join('|');
+    }
+
+
+    let { distro, release, arch, mode } = req.query;
+    await search(distro, '', release, '', arch, filenames, mode, "filename")
+            .on("finished", (response) => {
+                if(response.status === 'error'){
+                    res.internalError(req.query); console.error(response)
+                }else res.okResponse(response, req.query)
+            });
+    return res;
+
+})
+
+
+
+mainRouter.get('/generate', async (req, res) => {
+    console.log(req.query);
+    let packages;
+    let validatedRequest = validateRequest(req, res, ["distro", "release", "arch", "packages"], true, "package");
+    if (validatedRequest.isValid === false) {
+        res = validatedRequest.res;
+        return res;
+    } else {
+        packages = Array.from(new Set(validatedRequest.querydata));
     }
 
     let generatedScript = await generateScript(packages)
@@ -126,8 +152,8 @@ function isFilledArray(obj, arrName) {
 }
 
 
-function validateArgs(res, req, archRequired) {
-    let { distro, release, arch, packages } = req.query;
+function validateFilters(res, req, archRequired) {
+    let { distro, release, arch } = req.query;
     let query = req.query;
     let result = { isValid: false, res }
     if (!distro) {
@@ -184,31 +210,53 @@ function validateArgs(res, req, archRequired) {
         return result;
     }
 
-    if (!packages) {
-        res.badRequest({message: `argument packages not specified`}, query);
+    
+
+    result.isValid = true;
+    return result;
+}
+
+function validateQueryData(req, res, type="package") {
+
+    let query = req.query;
+    let result = { isValid: false, res }
+    let querydata;
+    if(type === "package"){
+        querydata = query.packages;
+    } else if (type === "filename") {
+        querydata = query.filenames;
+    } else {
+        res.internalError(query);
         result.res = res;
         return result;
     }
 
+    if (!querydata) {
+        res.badRequest({message: `argument ${type}s not specified`}, query);
+        result.res = res;
+        return result;
+    }
+
+
     try {
 
-        packages = JSON.parse(packages);
-        if (!Array.isArray(packages)) {
-            res.badRequest({message: `Argument packages is not array`}, query);
+        querydata = JSON.parse(querydata);
+        if (!Array.isArray(querydata)) {
+            res.badRequest({message: `Argument ${type}s is not array`}, query);
             result.res = res;
             return result;
         }
-        packages = packages.filter(p => p && p.length);
-        if (packages.length === 0) {
-            res.badRequest({message: `Argument packages is empty array`}, query);
+        querydata = querydata.filter(p => p && p.length);
+        if (querydata.length === 0) {
+            res.badRequest({message: `Argument ${type}s is empty array`}, query);
             result.res = res;
             return result;
         }
 
-        result.packages = packages
+        result.querydata = querydata
     } catch (error) {
         console.error(error);
-        res.badRequest({message: `badly specified argument packages`}, query)
+        res.badRequest({message: `badly specified argument ${type}s`}, query)
         result.res = res;
         return result;
     }
@@ -230,7 +278,7 @@ function checkArgs(allowedArgs, req, res) {
     return result;
 }
 
-function validateRequest(req, res, allowedArgs, archRequired) {
+function validateRequest(req, res, allowedArgs, archRequired, type) {
 
     let result = { isValid: false, res }
     let checkedArgs = checkArgs(allowedArgs, req, res);
@@ -239,15 +287,21 @@ function validateRequest(req, res, allowedArgs, archRequired) {
         return result;
     }
 
-    let validatedArgs = validateArgs(res, req, archRequired)
+    let validatedFilters = validateFilters(res, req, archRequired)
+    if(!validatedFilters.isValid){
+        result.res = validatedFilters.res;
+        return result;
+    }
 
-    if (validatedArgs.isValid && validatedArgs.packages) {
-        result.packages = validatedArgs.packages;
+
+    let validatedQueryData = validateQueryData(req, res, type)
+    if (validatedQueryData.isValid && validatedQueryData.querydata) {
+        result.querydata = validatedQueryData.querydata;
         result.isValid = true;
         return result;
 
     } else {
-        result.res = validatedArgs.res;
+        result.res = validatedQueryData.res;
         return result;
     }
 }

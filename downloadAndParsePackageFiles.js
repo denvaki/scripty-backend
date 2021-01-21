@@ -14,10 +14,10 @@ async function main() {
     const repoMapArr = require(dataPath);
 
     for (const distRepo of repoMapArr) {
-        const {baseURL} = distRepo;
+        const {baseURL, rootFolder} = distRepo;
         for (const releaseName of distRepo.releaseNames) {
             let URLs = [];
-            releaseName.components.forEach(component => component.archs.forEach(arch => URLs.push(`${baseURL}dists/${releaseName.release}/${component.component}/binary-${arch}/`)));
+            releaseName.components.forEach(component => component.archs.forEach(arch => URLs.push(`${baseURL}${rootFolder}${releaseName.release}/${component.component}/binary-${arch}/`)));
             const filenames = await downloadAll(URLs);
 
         }

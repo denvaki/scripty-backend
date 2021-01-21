@@ -1,30 +1,30 @@
 const exec = require('child_process').exec;
 const parsePackage = require('./parsePackage').parsePackage;
 const EventEmitter = require('events');
-const { response } = require('express');
 
-function search(distribution, rootdir, release, component, architecture, package, mode) {
+function search(distribution, rootdir, release, component, architecture, queryData, mode, type="package") {
     const emitter = new EventEmitter();
-    let query = 'sh getPackage/searchPackage.sh ';
+    let query = 'sh getPackage/search.sh ';
 
-    if(!distribution || !package){
-        emitter.emit("finished", {"status": "error", "message": "distribution or package not specified"})
+    if(!distribution || !queryData){
+        emitter.emit("finished", {"status": "error", "message": "distribution or searching data not specified"})
     }
-    package = escapeRegExp(package);
+    queryData = escapeRegExp(queryData);
 
-    query += `-d "${distribution}" -p "${package}"`;
+    query += `-d "${distribution}" -q "${queryData}"`;
     if(rootdir) query += ` -e "${rootdir}"`;
     if(release) query += ` -r "${release}"`;
     if(component) query += ` -c "${component}"`;
     if(architecture) query += ` -a "${architecture}"`;
     if(mode) query += ` -m "${mode}"`;
+    if(type) query += ` -t "${type}"`
 
     let response = {};
-    let packageLines = '';
+    let outputLines = '';
     console.log(query);
     const child = exec(query);
     child.stdout.on('data', (data) => {
-        packageLines += data;
+        outputLines += data;
         
     });
     child.stderr.on('data', (data) => {
@@ -37,11 +37,31 @@ function search(distribution, rootdir, release, component, architecture, package
         response.status = code !== 0 ? "error" : "success";
 
         if(response.status === "success"){
-            if(packageLines){
-                let packageObjs = packageLines.split(/\n\n(?=[^$])/).map(line => parsePackage(line).packageRecord).filter(p => p.Package);
-                response.result = packageObjs.length ? packageObjs : [];
+            let result = [];
+            if(outputLines){
+                if(type === "filename"){
+                    result = outputLines.split(/\n/).map(line => {
+                        if(!line) return null;
+                        line = line.trim();
+                        
+                        const filenamePackage = line.split(/\s+(?=\S+$)/);
+                        if(filenamePackage.length !== 2 ) return null;
+                        const filename = filenamePackage[0];
+                        let packages =  filenamePackage[1].split(',');
+                        
+                        if(filename.length === 0 || packages.length === 0){
+                            return null;
+                        }
+    
+                        return { filename , packages };
+                    }).filter(obj => obj)
+
+                } else if (type === "package") {
+                    result = outputLines.split(/\n\n(?=[^$])/).map(line => parsePackage(line).packageRecord).filter(p => p.Package);
+                } 
+                
             }
-            else response.result = [];
+            response.result = result;
         }
 
         emitter.emit("finished", response);
@@ -55,11 +75,6 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()[\]\\]/g, '\\$&'); // $& means the whole matched string
   }
   
-
-
-// search('debian', '', '', '', 'amd64', '.*', 'strict').on("finished", (response) => {
-//     console.log(response.result)
-// })
 
 module.exports = {
     search

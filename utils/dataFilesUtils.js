@@ -24,17 +24,24 @@ function downloadFile(URL, downloadFolder, localFileName, remoteFileName = 'Pack
         if (downloadFolder === undefined || localFileName === undefined) return { error: "Download folder of Local filename is not specified" };
         if (unzip === true && unzipFolder === undefined) return { error: "Unzip folder is not specified" };
         let linkName = URL + remoteFileName;
-        let fileName = localFileName + "+" + remoteFileName;
+
+        let fileName = localFileName + (remoteFileName ? "+" + remoteFileName : '');
         console.log(fileName)
-        const file = fs.createWriteStream(downloadFolder + fileName);
+
         const request = http.get(linkName, function (response) {
-            response.pipe(file);
-            file.on('close', () => {
-                if (unzip) {
-                    unpack(downloadFolder, fileName, unzipFolder)
-                        .on('uncompressed', (arg) => resolve({ status: 'downloadedUncompressed', value: arg }));
-                } else resolve({ status: 'downloaded', value: file });
-            });
+            if (response.statusCode === 200) {
+                const file = fs.createWriteStream(downloadFolder + fileName);
+                response.pipe(file);
+                file.on('close', () => {
+                    if (unzip) {
+                        unpack(downloadFolder, fileName, unzipFolder)
+                            .on('uncompressed', (arg) => resolve({ status: 'downloadedUncompressed', value: arg }));
+                    } else resolve({ status: 'downloaded', value: file });
+                });
+            } else {
+                resolve({status: 'error', statusCode: response.statusCode, linkName})
+            }
+
         });
     })
 
