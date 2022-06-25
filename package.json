@@ -15,7 +15,7 @@
     "express": "^4.17.1",
     "gunzip-file": "^0.1.1",
     "jsdom": "^16.2.2",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "pg": "^8.0.3",
     "pg-format": "^1.0.4",
     "pgtools": "^0.3.0",
